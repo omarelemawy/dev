@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import pandas as pd
 import uvicorn
+from flask import Flask, request, jsonify
 
 app = FastAPI()
 
@@ -24,7 +25,7 @@ def recommend_courses(answers: Answers):
         score = 0
         title = str(course['course_title']).lower()
 
-        # بناء السكور بناءً على الكلمات المفتاحية في العنوان
+        
         if answers.webDevelopment and ("web" in title or "frontend" in title or "react" in title or "javascript" in title):
             score += 1
         if answers.databases and ("database" in title or "sql" in title or "mongodb" in title or "mysql" in title):
@@ -52,3 +53,20 @@ def read_root():
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)
+
+
+
+
+app = Flask(__name__)
+
+feedback_store = []
+
+@app.route('/feedback', methods=['POST'])
+def feedback():
+    data = request.json
+    feedback_store.append({
+        "course_title": data['course_title'],
+        "useful": data['useful']
+    })
+    print("Feedback received:", data)
+    return jsonify({"message": "Feedback recorded!"})
